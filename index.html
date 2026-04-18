@@ -24,6 +24,7 @@
         }
 
         :root {
+            --cell-size: 2.8rem;
             --bg: #fafafa;
             --surface: #ffffff;
             --text: #1a1a2e;
@@ -360,8 +361,8 @@
         }
 
         .vec-char {
-            width: 2.8rem;
-            height: 2.8rem;
+            width: var(--cell-size);
+            height: var(--cell-size);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -379,8 +380,8 @@
         }
 
         .row-vec .vec-char {
-            width: 2.8rem;
-            height: 2rem;
+            width: var(--cell-size);
+            height: calc(var(--cell-size) * 0.71);
             font-size: 1.3rem;
         }
 
@@ -401,8 +402,8 @@
         }
 
         .cell {
-            width: 2.8rem;
-            height: 2.8rem;
+            width: var(--cell-size);
+            height: var(--cell-size);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -611,6 +612,135 @@
         .cell.flip {
             animation: flipIn 0.25s ease-out;
         }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 600px) {
+            :root {
+                --cell-size: 2.2rem;
+            }
+
+            header {
+                padding: 0.75rem 1rem;
+            }
+
+            header h1 {
+                font-size: 1.15rem;
+            }
+
+            .tagline {
+                font-size: 0.85rem;
+                padding: 0.4rem 0.5rem 0;
+            }
+
+            .controls {
+                gap: 0.5rem;
+            }
+
+            #theme-toggle,
+            #lang-toggle {
+                width: 3.4rem;
+                height: 1.9rem;
+            }
+
+            #theme-toggle::after,
+            #lang-toggle::after {
+                width: 1.5rem;
+                height: 1.5rem;
+                font-size: 1.1rem;
+            }
+
+            [data-theme="dark"] #theme-toggle::after {
+                transform: translateX(1.4rem);
+            }
+
+            #lang-toggle.jp::after {
+                transform: translateX(1.4rem);
+            }
+
+            .input-section {
+                margin: 1.2rem auto 0.75rem;
+            }
+
+            .char-input {
+                width: 100%;
+                max-width: 220px;
+                font-size: 1.5rem;
+                padding: 0.35em 0.5em;
+            }
+
+            .input-row {
+                gap: 0.5rem;
+            }
+
+            .presets {
+                gap: 0.35rem;
+            }
+
+            .presets button {
+                padding: 0.3em 0.7em;
+                font-size: 0.78rem;
+            }
+
+            .equation-wrapper {
+                padding: 1rem 0.5rem 1.5rem;
+            }
+
+            .equation {
+                flex-wrap: wrap;
+            }
+
+            .vec-char {
+                font-size: 1.3rem;
+            }
+
+            .row-vec .vec-char {
+                font-size: 1.1rem;
+            }
+
+            .cell {
+                font-size: 1.3rem;
+            }
+
+            .op-sign {
+                font-size: 1.2rem;
+            }
+
+            .tooltip {
+                max-width: 260px;
+            }
+
+            footer {
+                padding: 1rem;
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 380px) {
+            :root {
+                --cell-size: 1.8rem;
+            }
+
+            header h1 {
+                font-size: 1rem;
+            }
+
+            .char-input {
+                max-width: 180px;
+                font-size: 1.3rem;
+            }
+
+            .vec-char {
+                font-size: 1.1rem;
+            }
+
+            .row-vec .vec-char {
+                font-size: 0.95rem;
+            }
+
+            .cell {
+                font-size: 1.1rem;
+            }
+        }
     </style>
 </head>
 
@@ -802,7 +932,7 @@
                     // Matrix
                     const grid = document.createElement('div');
                     grid.className = 'matrix-grid';
-                    grid.style.gridTemplateColumns = `repeat(${nCols}, 2.8rem)`;
+                    grid.style.gridTemplateColumns = `repeat(${nCols}, var(--cell-size))`;
 
                     let delay = 0;
                     for (let i = 0; i < nRows; i++) {
