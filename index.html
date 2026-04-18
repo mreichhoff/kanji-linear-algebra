@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <script>if (window.matchMedia('(prefers-color-scheme:dark)').matches) document.documentElement.dataset.theme = 'dark'</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漢字 Linear Algebra</title>
+    <meta property="og:title" content="漢字 Linear Algebra — Character Matrix">
+    <meta property="og:description"
+        content="Multiply CJK characters by their radicals to discover new characters. What happens when 木 × 木 = 林? Type any characters to find out.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="漢字 Linear Algebra — Character Matrix">
+    <meta name="twitter:description"
+        content="Multiply CJK characters by their radicals to discover new characters. What happens when 木 × 木 = 林? Type any characters to find out.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&family=Noto+Sans+SC&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #fafafa;
+            --surface: #ffffff;
+            --text: #1a1a2e;
+            --text-muted: #64748b;
+            --bracket: #4f46e5;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --cell-s: 75%;
+            --cell-l: 90%;
+            --cell-text: #1a1a2e;
+            --shadow: rgba(0, 0, 0, 0.08);
+            --shadow-lg: rgba(0, 0, 0, 0.12);
+            --input-bg: #ffffff;
+            --input-border: #d1d5db;
+            --preset-bg: transparent;
+            --tooltip-bg: #ffffff;
+            --tooltip-border: #e2e8f0;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0a0a14;
+            --surface: #161625;
+            --text: #e4e4e7;
+            --text-muted: #94a3b8;
+            --bracket: #818cf8;
+            --accent: #818cf8;
+            --accent-hover: #a5b4fc;
+            --cell-s: 55%;
+            --cell-l: 22%;
+            --cell-text: #e4e4e7;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --shadow-lg: rgba(0, 0, 0, 0.5);
+            --input-bg: #1e1e2e;
+            --input-border: #334155;
+            --preset-bg: transparent;
+            --tooltip-bg: #1e1e2e;
+            --tooltip-border: #334155;
+        }
+
+        body {
+            font-family: "Noto Sans SC", "Noto Sans JP", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #4a6fa5 50%, #f0a0b0 100%);
+            color: #fff;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 12px rgba(30, 58, 95, 0.3);
+            transition: background 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        header.zh {
+            background: linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #f59e0b 100%);
+            box-shadow: 0 2px 12px rgba(185, 28, 28, 0.3);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        header h1 span {
+            opacity: 0.85;
+            font-weight: 400;
+            font-size: 1.1rem;
+            margin-left: 0.4rem;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        #theme-toggle {
+            position: relative;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            width: 4.2rem;
+            height: 2.3rem;
+            border-radius: 1.2rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            padding: 0 0.3rem;
+        }
+
+        #theme-toggle::after {
+            content: '☀️';
+            position: absolute;
+            left: 0.25rem;
+            width: 1.9rem;
+            height: 1.9rem;
+            border-radius: 50%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: transform 0.3s ease, content 0.3s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        [data-theme="dark"] #theme-toggle {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        [data-theme="dark"] #theme-toggle::after {
+            content: '🌙';
+            transform: translateX(1.8rem);
+        }
+
+        #theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        #lang-toggle {
+            position: relative;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            width: 4.2rem;
+            height: 2.3rem;
+            border-radius: 1.2rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            padding: 0 0.3rem;
+        }
+
+        #lang-toggle::after {
+            content: '🇨🇳';
+            position: absolute;
+            left: 0.25rem;
+            width: 1.9rem;
+            height: 1.9rem;
+            border-radius: 50%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        #lang-toggle.jp::after {
+            content: '🇯🇵';
+            transform: translateX(1.8rem);
+        }
+
+        #lang-toggle:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        /* ===== INPUT SECTION ===== */
+        .input-section {
+            max-width: 700px;
+            margin: 2rem auto 1rem;
+            text-align: center;
+            padding: 0 1rem;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+            font-weight: 500;
+        }
+
+        .char-input {
+            font-size: 1.8rem;
+            text-align: center;
+            letter-spacing: 0.35em;
+            padding: 0.4em 0.7em;
+            border: 2px solid var(--input-border);
+            border-radius: 12px;
+            background: var(--input-bg);
+            color: var(--text);
+            width: 260px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.3s;
+        }
+
+        .char-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        .presets {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .presets button {
+            padding: 0.35em 1em;
+            border-radius: 20px;
+            border: 1.5px solid var(--accent);
+            background: var(--preset-bg);
+            color: var(--accent);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .presets button:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        #share-btn {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        #share-btn:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        #share-btn.copied {
+            background: #10b981;
+            border-color: #10b981;
+        }
+
+        /* ===== EQUATION ===== */
+        .equation-wrapper {
+            overflow-x: auto;
+            padding: 1.5rem 1rem 2rem;
+        }
+
+        .equation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            min-width: min-content;
+        }
+
+        /* Bracket containers */
+        .bracket-wrap {
+            display: flex;
+            align-items: stretch;
+        }
+
+        .br-l,
+        .br-r {
+            width: 8px;
+            flex-shrink: 0;
+            transition: border-color 0.3s;
+        }
+
+        .br-l {
+            border: 2.5px solid var(--bracket);
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+        }
+
+        .br-r {
+            border: 2.5px solid var(--bracket);
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Vectors */
+        .col-vec {
+            display: flex;
+            flex-direction: column;
+            padding: 0.3rem 0.4rem;
+            gap: 0.2rem;
+        }
+
+        .row-vec {
+            display: flex;
+            flex-direction: row;
+            padding: 0.4rem 0.3rem;
+            gap: 0.3rem;
+        }
+
+        .vec-char {
+            width: 2.8rem;
+            height: 2.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .row-vec .vec-char {
+            width: 2.8rem;
+            height: 2rem;
+            font-size: 1.3rem;
+        }
+
+        /* Equals & multiply signs */
+        .op-sign {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            padding: 0 0.2rem;
+            flex-shrink: 0;
+            user-select: none;
+        }
+
+        /* Matrix grid */
+        .matrix-grid {
+            display: grid;
+            gap: 3px;
+            padding: 0.4rem;
+        }
+
+        .cell {
+            width: 2.8rem;
+            height: 2.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            border-radius: 6px;
+            cursor: default;
+            transition: transform 0.15s, box-shadow 0.15s;
+            position: relative;
+            color: var(--cell-text);
+            will-change: transform;
+        }
+
+        .cell:not(.empty) {
+            cursor: pointer;
+        }
+
+        .cell:not(.empty):hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 16px var(--shadow-lg);
+            z-index: 2;
+        }
+
+        .cell.empty {
+            opacity: 0.25;
+            font-size: 1rem;
+        }
+
+        /* ===== TOOLTIP ===== */
+        .tooltip {
+            position: fixed;
+            padding: 0.9rem 1.2rem;
+            background: var(--tooltip-bg);
+            border: 1px solid var(--tooltip-border);
+            border-radius: 10px;
+            box-shadow: 0 8px 24px var(--shadow-lg);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+            z-index: 100;
+            max-width: 320px;
+            line-height: 1.5;
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .tooltip .tt-close {
+            position: absolute;
+            top: 0.3rem;
+            right: 0.5rem;
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            line-height: 1;
+            padding: 0.1rem 0.2rem;
+        }
+
+        .tooltip .tt-close:hover {
+            color: var(--text);
+        }
+
+        .tooltip .tt-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .tooltip .tt-char {
+            font-size: 2.2rem;
+            text-align: center;
+        }
+
+        .tooltip .tt-speak {
+            position: relative;
+            display: inline-block;
+            box-sizing: border-box;
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--text-muted);
+            border-radius: 4px;
+            background: none;
+            cursor: pointer;
+            transition: border-color 0.15s;
+            flex-shrink: 0;
+        }
+
+        .tooltip .tt-speak::before {
+            content: "";
+            display: block;
+            box-sizing: border-box;
+            position: absolute;
+            width: 0;
+            height: 10px;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 6px solid var(--text-muted);
+            top: 4px;
+            left: 7px;
+            transition: border-left-color 0.15s;
+        }
+
+        .tooltip .tt-speak:hover {
+            border-color: var(--accent);
+        }
+
+        .tooltip .tt-speak:hover::before {
+            border-left-color: var(--accent);
+        }
+
+        .tooltip .tt-eq {
+            text-align: center;
+            font-size: 1.05rem;
+            color: var(--accent);
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+        }
+
+        .tooltip .tt-def {
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+
+        .tooltip .tt-alt {
+            margin-top: 0.4rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .tooltip .tt-alt span {
+            display: inline-block;
+            margin: 0 0.15rem;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .empty-state .emoji {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .cell.animate {
+            animation: fadeIn 0.3s ease-out both;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1><span id="header-kanji">漢字</span> Linear Algebra <span>Character Matrix</span></h1>
+        <div class="controls">
+            <button id="lang-toggle" class="jp" title="Toggle language"></button>
+            <button id="theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode"></button>
+        </div>
+    </header>
+
+    <main>
+        <section class="input-section">
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="col-input">Column ↓</label>
+                    <input type="text" id="col-input" class="char-input" value="金木水火土" maxlength="8" autocomplete="off"
+                        spellcheck="false" />
+                </div>
+                <div class="input-group">
+                    <label for="row-input">Row →</label>
+                    <input type="text" id="row-input" class="char-input" value="金木水火土" maxlength="8" autocomplete="off"
+                        spellcheck="false" />
+                </div>
+            </div>
+            <div class="presets">
+                <button data-col="金木水火土" data-row="金木水火土">五行 Elements</button>
+                <button data-col="日月山水" data-row="日月山水">自然 Nature</button>
+                <button data-col="人口目手" data-row="木水火土">Mix</button>
+                <button data-col="金木水" data-row="火土">Asymmetric</button>
+                <button id="share-btn">📋 Share</button>
+            </div>
+        </section>
+
+        <section class="equation-wrapper" id="equation-wrapper">
+            <!-- Populated by JS -->
+        </section>
+    </main>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <footer>
+        Character decomposition data from the
+        <a href="https://github.com/cjkvi/cjkvi-ids" target="_blank" rel="noopener">CJKVI IDS Database</a>.
+    </footer>
+
+    <script src="data.js"></script>
+    <script>
+            (function () {
+                'use strict';
+
+                const colInput = document.getElementById('col-input');
+                const rowInput = document.getElementById('row-input');
+                const eqWrapper = document.getElementById('equation-wrapper');
+                const tooltip = document.getElementById('tooltip');
+                let lang = 'jp';
+
+                /* ---- Data helpers ---- */
+
+                function getDefs() {
+                    return lang === 'zh' ? ZH_DEFS : JP_DEFS;
+                }
+
+                function getDefinition(ch) {
+                    const primary = getDefs()[ch];
+                    if (primary) return primary;
+                    // Fallback: try the other language
+                    const fallback = (lang === 'zh' ? JP_DEFS : ZH_DEFS)[ch];
+                    return fallback || null;
+                }
+
+                function multiply(a, b) {
+                    const seen = new Set();
+                    // Collect from both directions
+                    if (PAIR_INDEX[a] && PAIR_INDEX[a][b]) {
+                        for (const ch of PAIR_INDEX[a][b]) seen.add(ch);
+                    }
+                    if (PAIR_INDEX[b] && PAIR_INDEX[b][a]) {
+                        for (const ch of PAIR_INDEX[b][a]) seen.add(ch);
+                    }
+                    // Sort: prefer renderable chars (basic CJK), then ones with
+                    // definitions, then lower code point. Extension B+ (U+20000+)
+                    // characters rarely have font glyphs, so push them to the end.
+                    const defs = getDefs();
+                    const fallback = lang === 'zh' ? JP_DEFS : ZH_DEFS;
+                    return [...seen].sort((x, y) => {
+                        const xRare = x.codePointAt(0) >= 0x20000 ? 1 : 0;
+                        const yRare = y.codePointAt(0) >= 0x20000 ? 1 : 0;
+                        if (xRare !== yRare) return xRare - yRare;
+                        const xDef = (defs[x] || fallback[x]) ? 0 : 1;
+                        const yDef = (defs[y] || fallback[y]) ? 0 : 1;
+                        if (xDef !== yDef) return xDef - yDef;
+                        return x.codePointAt(0) - y.codePointAt(0);
+                    });
+                }
+
+                /* ---- URL hash ---- */
+
+                function updateHash() {
+                    history.replaceState(null, '', '#' + colInput.value + 'x' + rowInput.value);
+                }
+
+                function loadFromHash() {
+                    const hash = decodeURIComponent(location.hash.slice(1));
+                    if (!hash) return false;
+                    const idx = hash.indexOf('x');
+                    if (idx > 0 && idx < hash.length - 1) {
+                        colInput.value = hash.slice(0, idx);
+                        rowInput.value = hash.slice(idx + 1);
+                        return true;
+                    }
+                    return false;
+                }
+
+                /* ---- Rendering ---- */
+
+                function makeBracketWrap(inner) {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'bracket-wrap';
+                    const bl = document.createElement('div');
+                    bl.className = 'br-l';
+                    const br = document.createElement('div');
+                    br.className = 'br-r';
+                    wrap.appendChild(bl);
+                    wrap.appendChild(inner);
+                    wrap.appendChild(br);
+                    return wrap;
+                }
+
+                function makeSign(text) {
+                    const span = document.createElement('span');
+                    span.className = 'op-sign';
+                    span.textContent = text;
+                    return span;
+                }
+
+                function render() {
+                    updateHash();
+                    const colChars = [...colInput.value].filter(c => c.trim());
+                    const rowChars = [...rowInput.value].filter(c => c.trim());
+                    const nRows = colChars.length;
+                    const nCols = rowChars.length;
+
+                    eqWrapper.innerHTML = '';
+
+                    if (nRows === 0 && nCols === 0) {
+                        eqWrapper.innerHTML = `
+                <div class="empty-state">
+                    <div class="emoji">✨</div>
+                    <div>Type characters above to see the matrix</div>
+                </div>`;
+                        return;
+                    }
+
+                    const eq = document.createElement('div');
+                    eq.className = 'equation';
+
+                    // Column vector
+                    const colInner = document.createElement('div');
+                    colInner.className = 'col-vec';
+                    for (const ch of colChars) {
+                        const d = document.createElement('div');
+                        d.className = 'vec-char';
+                        d.textContent = ch;
+                        colInner.appendChild(d);
+                    }
+                    eq.appendChild(makeBracketWrap(colInner));
+
+                    // Row vector
+                    const rowInner = document.createElement('div');
+                    rowInner.className = 'row-vec';
+                    for (const ch of rowChars) {
+                        const d = document.createElement('div');
+                        d.className = 'vec-char';
+                        d.textContent = ch;
+                        rowInner.appendChild(d);
+                    }
+                    eq.appendChild(makeBracketWrap(rowInner));
+
+                    // Equals
+                    eq.appendChild(makeSign('='));
+
+                    // Matrix
+                    const grid = document.createElement('div');
+                    grid.className = 'matrix-grid';
+                    grid.style.gridTemplateColumns = `repeat(${nCols}, 2.8rem)`;
+
+                    let delay = 0;
+                    for (let i = 0; i < nRows; i++) {
+                        for (let j = 0; j < nCols; j++) {
+                            const results = multiply(colChars[i], rowChars[j]);
+                            const resultChar = results.length > 0 ? results[0] : null;
+
+                            const cell = document.createElement('div');
+                            cell.className = 'cell animate' + (resultChar ? '' : ' empty');
+                            cell.textContent = resultChar || '·';
+                            cell.style.animationDelay = `${delay}ms`;
+                            delay += 20;
+
+                            // Color: diagonal rainbow
+                            const maxDiag = (nRows + nCols - 2) || 1;
+                            const hue = ((i + j) / maxDiag) * 300;
+                            cell.style.background = `hsl(${hue}, var(--cell-s), var(--cell-l))`;
+
+                            if (resultChar) {
+                                cell.dataset.char = resultChar;
+                                cell.dataset.row = colChars[i];
+                                cell.dataset.col = rowChars[j];
+                                cell.dataset.alt = results.slice(0, 8).join('');
+                            }
+
+                            grid.appendChild(cell);
+                        }
+                    }
+
+                    eq.appendChild(makeBracketWrap(grid));
+                    eqWrapper.appendChild(eq);
+                }
+
+                /* ---- Events ---- */
+
+                colInput.addEventListener('input', render);
+                rowInput.addEventListener('input', render);
+
+                // Presets
+                document.querySelectorAll('.presets button[data-col]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        colInput.value = btn.dataset.col;
+                        rowInput.value = btn.dataset.row;
+                        render();
+                    });
+                });
+
+                // Share
+                document.getElementById('share-btn').addEventListener('click', async () => {
+                    const btn = document.getElementById('share-btn');
+                    try {
+                        await navigator.clipboard.writeText(location.href);
+                    } catch {
+                        const ta = document.createElement('textarea');
+                        ta.value = location.href;
+                        ta.style.position = 'fixed';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                    }
+                    btn.textContent = '✓ Copied!';
+                    btn.classList.add('copied');
+                    setTimeout(() => {
+                        btn.textContent = '📋 Share';
+                        btn.classList.remove('copied');
+                    }, 2000);
+                });
+
+                // Theme toggle
+                document.getElementById('theme-toggle').addEventListener('click', () => {
+                    const html = document.documentElement;
+                    const isDark = html.dataset.theme === 'dark';
+                    html.dataset.theme = isDark ? 'light' : 'dark';
+                });
+
+                // Language toggle
+                document.getElementById('lang-toggle').addEventListener('click', () => {
+                    const btn = document.getElementById('lang-toggle');
+                    const isJp = btn.classList.toggle('jp');
+                    lang = isJp ? 'jp' : 'zh';
+                    document.getElementById('header-kanji').textContent = isJp ? '漢字' : '汉字';
+                    document.querySelector('header').classList.toggle('zh', !isJp);
+                });
+
+                // Tooltip
+                function speakChar(ch) {
+                    if (!('speechSynthesis' in window)) return;
+                    speechSynthesis.cancel();
+                    const utter = new SpeechSynthesisUtterance(ch);
+                    utter.lang = lang === 'jp' ? 'ja-JP' : 'zh-CN';
+                    utter.rate = 0.8;
+                    speechSynthesis.speak(utter);
+                }
+
+                function showTooltip(cell, x, y) {
+                    const ch = cell.dataset.char;
+                    const def = getDefinition(ch);
+                    const row = cell.dataset.row;
+                    const col = cell.dataset.col;
+                    const alt = cell.dataset.alt || '';
+
+                    let html = `<button class="tt-close" data-close title="Close">×</button>`;
+                    html += `<div class="tt-header"><span class="tt-char">${ch}</span><button class="tt-speak" data-speak="${ch}" title="Pronounce"></button></div>`;
+                    html += `<div class="tt-eq">${row} × ${col} = ${ch}</div>`;
+                    if (def) {
+                        html += `<div class="tt-def">${def}</div>`;
+                    }
+                    if (alt.length > 1) {
+                        const altChars = [...alt].slice(1).map(c =>
+                            `<span>${c}</span>`
+                        ).join('');
+                        html += `<div class="tt-alt">Alternatives: ${altChars}</div>`;
+                    }
+
+                    tooltip.innerHTML = html;
+
+                    // Position tooltip before making visible to avoid flash
+                    const ttRect = tooltip.getBoundingClientRect();
+                    let left = x - ttRect.width / 2;
+                    let top = y + 12;
+
+                    // Keep within viewport
+                    if (left < 8) left = 8;
+                    if (left + ttRect.width > window.innerWidth - 8) {
+                        left = window.innerWidth - ttRect.width - 8;
+                    }
+                    if (top + ttRect.height > window.innerHeight - 8) {
+                        top = y - ttRect.height - 12;
+                    }
+
+                    tooltip.style.left = left + 'px';
+                    tooltip.style.top = top + 'px';
+                    tooltip.classList.add('visible');
+                }
+
+                function hideTooltip() {
+                    tooltip.classList.remove('visible');
+                }
+
+                tooltip.addEventListener('click', e => {
+                    const btn = e.target.closest('[data-speak]');
+                    if (btn) speakChar(btn.dataset.speak);
+                    if (e.target.closest('[data-close]')) hideTooltip();
+                });
+
+                eqWrapper.addEventListener('click', e => {
+                    const cell = e.target.closest('.cell[data-char]');
+                    if (cell) {
+                        const rect = cell.getBoundingClientRect();
+                        showTooltip(cell, rect.left + rect.width / 2, rect.bottom);
+                    }
+                });
+
+                document.addEventListener('click', e => {
+                    if (!tooltip.contains(e.target) && !e.target.closest('.cell[data-char]')) {
+                        hideTooltip();
+                    }
+                });
+
+                // Load from URL hash if present
+                loadFromHash();
+
+                // Initial render
+                render();
+
+                // Handle browser back/forward
+                window.addEventListener('hashchange', () => {
+                    loadFromHash();
+                    render();
+                });
+
+            })();
+    </script>
+
+</body>
+
+</html>
