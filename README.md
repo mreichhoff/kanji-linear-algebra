@@ -2,6 +2,8 @@
 
 Multiply Japanese or Chinese characters by their radicals to discover new characters. What happens when 木 × 木 = 林? Type any characters to find out.
 
+**[Try it live](https://mreichhoff.github.io/kanji-linear-algebra/)**
+
 https://github.com/user-attachments/assets/4eefc227-f859-403b-b37a-17a6df0a22e6
 
 
