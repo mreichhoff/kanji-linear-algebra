@@ -98,11 +98,13 @@
             letter-spacing: 0.02em;
         }
 
-        header h1 span {
-            opacity: 0.85;
-            font-weight: 400;
-            font-size: 1.1rem;
-            margin-left: 0.4rem;
+        .tagline {
+            text-align: center;
+            padding: 0.6rem 1rem 0;
+            font-size: 0.95rem;
+            font-style: italic;
+            color: var(--text-muted);
+            letter-spacing: 0.03em;
         }
 
         .controls {
@@ -267,11 +269,6 @@
             color: #fff;
         }
 
-        #share-btn {
-            background: var(--accent);
-            color: #fff;
-        }
-
         #share-btn:hover {
             background: var(--accent-hover);
             border-color: var(--accent-hover);
@@ -280,6 +277,11 @@
         #share-btn.copied {
             background: #10b981;
             border-color: #10b981;
+            color: #fff;
+        }
+
+        #random-btn {
+            border-style: dashed;
         }
 
         /* ===== EQUATION ===== */
@@ -345,6 +347,14 @@
             font-size: 1.6rem;
             color: var(--text);
             font-weight: 500;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .vec-char:hover {
+            transform: scale(1.15);
+            box-shadow: 0 2px 8px var(--shadow-lg);
         }
 
         .row-vec .vec-char {
@@ -565,7 +575,7 @@
 <body>
 
     <header>
-        <h1><span id="header-kanji">漢字</span> Linear Algebra <span>Character Matrix</span></h1>
+        <h1><span id="header-kanji">漢字</span> Linear Algebra</h1>
         <div class="controls">
             <button id="lang-toggle" class="jp" title="Toggle language"></button>
             <button id="theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode"></button>
@@ -573,6 +583,7 @@
     </header>
 
     <main>
+        <p class="tagline">Enter the Character Matrix</p>
         <section class="input-section">
             <div class="input-row">
                 <div class="input-group">
@@ -591,6 +602,7 @@
                 <button data-col="日月山水" data-row="日月山水">自然 Nature</button>
                 <button data-col="人口目手" data-row="木水火土">Mix</button>
                 <button data-col="金木水" data-row="火土">Asymmetric</button>
+                <button id="random-btn">🎲 Random</button>
                 <button id="share-btn">📋 Share</button>
             </div>
         </section>
@@ -725,6 +737,7 @@
                         const d = document.createElement('div');
                         d.className = 'vec-char';
                         d.textContent = ch;
+                        d.dataset.char = ch;
                         colInner.appendChild(d);
                     }
                     eq.appendChild(makeBracketWrap(colInner));
@@ -736,6 +749,7 @@
                         const d = document.createElement('div');
                         d.className = 'vec-char';
                         d.textContent = ch;
+                        d.dataset.char = ch;
                         rowInner.appendChild(d);
                     }
                     eq.appendChild(makeBracketWrap(rowInner));
@@ -817,6 +831,33 @@
                     }, 2000);
                 });
 
+                // Random
+                const RANDOM_PRESETS = [
+                    ['木火', '山水'],
+                    ['日月', '木火'],
+                    ['刀力', '口木'],
+                    ['大小', '人口'],
+                    ['木水', '日月山'],
+                    ['火土', '人口目'],
+                    ['木火土', '日月'],
+                    ['木火水', '人口目'],
+                    ['木火水', '人口目手'],
+                    ['人口目手', '木火水'],
+                    ['金木水火', '日月山'],
+                    ['日月', '金木水火土'],
+                ];
+                let lastRandomIdx = -1;
+                document.getElementById('random-btn').addEventListener('click', () => {
+                    let idx;
+                    do {
+                        idx = Math.floor(Math.random() * RANDOM_PRESETS.length);
+                    } while (idx === lastRandomIdx && RANDOM_PRESETS.length > 1);
+                    lastRandomIdx = idx;
+                    colInput.value = RANDOM_PRESETS[idx][0];
+                    rowInput.value = RANDOM_PRESETS[idx][1];
+                    render();
+                });
+
                 // Theme toggle
                 document.getElementById('theme-toggle').addEventListener('click', () => {
                     const html = document.documentElement;
@@ -852,7 +893,9 @@
 
                     let html = `<button class="tt-close" data-close title="Close">×</button>`;
                     html += `<div class="tt-header"><span class="tt-char">${ch}</span><button class="tt-speak" data-speak="${ch}" title="Pronounce"></button></div>`;
-                    html += `<div class="tt-eq">${row} × ${col} = ${ch}</div>`;
+                    if (row && col) {
+                        html += `<div class="tt-eq">${row} × ${col} = ${ch}</div>`;
+                    }
                     if (def) {
                         html += `<div class="tt-def">${def}</div>`;
                     }
@@ -899,11 +942,17 @@
                     if (cell) {
                         const rect = cell.getBoundingClientRect();
                         showTooltip(cell, rect.left + rect.width / 2, rect.bottom);
+                        return;
+                    }
+                    const vec = e.target.closest('.vec-char[data-char]');
+                    if (vec) {
+                        const rect = vec.getBoundingClientRect();
+                        showTooltip(vec, rect.left + rect.width / 2, rect.bottom);
                     }
                 });
 
                 document.addEventListener('click', e => {
-                    if (!tooltip.contains(e.target) && !e.target.closest('.cell[data-char]')) {
+                    if (!tooltip.contains(e.target) && !e.target.closest('.cell[data-char]') && !e.target.closest('.vec-char[data-char]')) {
                         hideTooltip();
                     }
                 });
