@@ -80,6 +80,7 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 12px rgba(30, 58, 95, 0.3);
+            font-family: monospace;
             transition: background 0.5s ease, box-shadow 0.5s ease;
         }
 
@@ -97,10 +98,10 @@
         .tagline {
             text-align: center;
             padding: 0.6rem 1rem 0;
-            font-size: 0.95rem;
-            font-style: italic;
+            font-size: 1rem;
+            font-family: monospace;
             color: var(--text-muted);
-            letter-spacing: 0.03em;
+            letter-spacing: 0.1em;
         }
 
         .controls {
@@ -657,9 +658,6 @@
     <div class="tooltip" id="tooltip"></div>
 
     <footer>
-        Character decomposition data from the
-        <a href="https://github.com/cjkvi/cjkvi-ids" target="_blank" rel="noopener">CJKVI IDS Database</a>.
-        &middot;
         <a href="https://github.com/mreichhoff" target="_blank" rel="noopener">GitHub</a>
     </footer>
 
@@ -927,11 +925,35 @@
                 });
 
                 // Tooltip
+                let voiceCache = {};
+                function pickVoice(langTag) {
+                    if (voiceCache[langTag]) return voiceCache[langTag];
+                    const voices = speechSynthesis.getVoices();
+                    // Prefer premium/enhanced voices (macOS names these specifically)
+                    const preferred = langTag === 'ja-JP'
+                        ? ['Kyoko', 'O-Ren', 'Hattori']
+                        : ['Tingting', 'Mei-Jia', 'Li-Na'];
+                    for (const name of preferred) {
+                        const v = voices.find(v => v.name.includes(name));
+                        if (v) { voiceCache[langTag] = v; return v; }
+                    }
+                    // Fall back to any voice matching the language
+                    const match = voices.find(v => v.lang.startsWith(langTag.slice(0, 2)));
+                    if (match) voiceCache[langTag] = match;
+                    return match || null;
+                }
+                if ('speechSynthesis' in window) {
+                    speechSynthesis.addEventListener('voiceschanged', () => { voiceCache = {}; });
+                }
+
                 function speakChar(ch) {
                     if (!('speechSynthesis' in window)) return;
                     speechSynthesis.cancel();
                     const utter = new SpeechSynthesisUtterance(ch);
-                    utter.lang = lang === 'jp' ? 'ja-JP' : 'zh-CN';
+                    const langTag = lang === 'jp' ? 'ja-JP' : 'zh-CN';
+                    utter.lang = langTag;
+                    const voice = pickVoice(langTag);
+                    if (voice) utter.voice = voice;
                     utter.rate = 0.8;
                     speechSynthesis.speak(utter);
                 }
