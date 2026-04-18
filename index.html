@@ -633,13 +633,13 @@
             <div class="input-row">
                 <div class="input-group">
                     <label for="col-input">Column ↓</label>
-                    <input type="text" id="col-input" class="char-input" value="金木水火土" maxlength="8" autocomplete="off"
+                    <input type="text" id="col-input" class="char-input" maxlength="8" autocomplete="off"
                         spellcheck="false" />
                 </div>
                 <button id="swap-btn" class="swap-btn" title="Swap vectors">⇄</button>
                 <div class="input-group">
                     <label for="row-input">Row →</label>
-                    <input type="text" id="row-input" class="char-input" value="金木水火土" maxlength="8" autocomplete="off"
+                    <input type="text" id="row-input" class="char-input" maxlength="8" autocomplete="off"
                         spellcheck="false" />
                 </div>
             </div>
@@ -1036,8 +1036,11 @@
                     }
                 });
 
-                // Load from URL hash if present
-                loadFromHash();
+                // Set initial values: hash takes priority, otherwise default
+                if (!loadFromHash()) {
+                    colInput.value = '金木水火土';
+                    rowInput.value = '金木水火土';
+                }
 
                 // Initial render
                 render();
