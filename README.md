@@ -2,6 +2,10 @@
 
 Multiply Japanese or Chinese characters by their radicals to discover new characters. What happens when 木 × 木 = 林? Type any characters to find out.
 
+https://github.com/user-attachments/assets/4eefc227-f859-403b-b37a-17a6df0a22e6
+
+
+
 ## How It Works
 
 Enter CJK characters as a column vector and a row vector. The app computes their "product": for each pair of characters, it finds all characters composed of those two components using [Ideographic Description Sequences](https://en.wikipedia.org/wiki/Ideographic_Description_Characters_(Unicode_block)). For example, 木 × 木 yields 林 because 林 = ⿰木木.
