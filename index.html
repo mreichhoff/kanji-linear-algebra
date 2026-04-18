@@ -225,13 +225,6 @@
             transition: all 0.2s;
             margin-bottom: 0.55rem;
             flex-shrink: 0;
-            padding-bottom: 0.3rem;
-        }
-
-        .swap-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            transform: rotate(180deg);
         }
 
         .input-group {
@@ -349,8 +342,8 @@
         .col-vec {
             display: flex;
             flex-direction: column;
-            padding: 0.3rem 0.4rem;
-            gap: 0.2rem;
+            padding: 0.15rem 0.4rem;
+            gap: 0;
         }
 
         .row-vec {
@@ -558,26 +551,21 @@
             margin-bottom: 0.5rem;
         }
 
-        /* ===== FOOTER ===== */
-        footer {
-            text-align: center;
-            padding: 1.5rem;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--bg);
-        }
-
-        footer a {
-            color: var(--accent);
+        .gh-link {
+            color: rgba(255, 255, 255, 0.7);
             text-decoration: none;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
         }
 
-        footer a:hover {
-            text-decoration: underline;
+        .gh-link:hover {
+            color: #fff;
+        }
+
+        .gh-link svg {
+            fill: currentColor;
         }
 
         /* ===== ANIMATIONS ===== */
@@ -620,7 +608,7 @@
             }
 
             header {
-                padding: 0.75rem 1rem;
+                padding: 0.75rem;
             }
 
             header h1 {
@@ -661,15 +649,26 @@
                 margin: 1.2rem auto 0.75rem;
             }
 
-            .char-input {
-                width: 100%;
-                max-width: 220px;
-                font-size: 1.5rem;
-                padding: 0.35em 0.5em;
-            }
-
             .input-row {
                 gap: 0.5rem;
+                flex-wrap: nowrap;
+            }
+
+            .swap-btn {
+                margin-bottom: 0.15rem;
+            }
+
+            .input-group {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .char-input {
+                width: 100%;
+                max-width: none;
+                font-size: 1.3rem;
+                padding: 0.35em 0.3em;
+                letter-spacing: 0.2em;
             }
 
             .presets {
@@ -709,10 +708,7 @@
                 max-width: 260px;
             }
 
-            footer {
-                padding: 1rem;
-                font-size: 0.7rem;
-            }
+
         }
 
         @media (max-width: 380px) {
@@ -725,8 +721,7 @@
             }
 
             .char-input {
-                max-width: 180px;
-                font-size: 1.3rem;
+                font-size: 1.1rem;
             }
 
             .vec-char {
@@ -749,6 +744,11 @@
     <header>
         <h1><span id="header-kanji">漢字</span> Linear Algebra</h1>
         <div class="controls">
+            <a class="gh-link" href="https://github.com/mreichhoff/kanji-linear-algebra" target="_blank" rel="noopener"
+                title="GitHub"><svg width="20" height="20" viewBox="0 0 16 16">
+                    <path
+                        d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z" />
+                </svg></a>
             <button id="lang-toggle" class="jp" title="Toggle language"></button>
             <button id="theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode"></button>
         </div>
@@ -786,10 +786,6 @@
     </main>
 
     <div class="tooltip" id="tooltip"></div>
-
-    <footer>
-        <a href="https://github.com/mreichhoff/kanji-linear-algebra" target="_blank" rel="noopener">GitHub</a>
-    </footer>
 
     <script src="data.js"></script>
     <script>
