@@ -212,6 +212,30 @@
             margin-bottom: 0.75rem;
         }
 
+        .swap-btn {
+            background: none;
+            border: 1.5px solid var(--input-border);
+            border-radius: 50%;
+            width: 2.2rem;
+            height: 2.2rem;
+            font-size: 1.1rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            margin-bottom: 0.55rem;
+            flex-shrink: 0;
+            padding-bottom: 0.3rem;
+        }
+
+        .swap-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: rotate(180deg);
+        }
+
         .input-group {
             display: flex;
             flex-direction: column;
@@ -542,6 +566,11 @@
             padding: 1.5rem;
             color: var(--text-muted);
             font-size: 0.8rem;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg);
         }
 
         footer a {
@@ -569,6 +598,22 @@
         .cell.animate {
             animation: fadeIn 0.3s ease-out both;
         }
+
+        @keyframes flipIn {
+            0% {
+                transform: scaleY(0);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scaleY(1);
+                opacity: 1;
+            }
+        }
+
+        .cell.flip {
+            animation: flipIn 0.25s ease-out;
+        }
     </style>
 </head>
 
@@ -591,6 +636,7 @@
                     <input type="text" id="col-input" class="char-input" value="金木水火土" maxlength="8" autocomplete="off"
                         spellcheck="false" />
                 </div>
+                <button id="swap-btn" class="swap-btn" title="Swap vectors">⇄</button>
                 <div class="input-group">
                     <label for="row-input">Row →</label>
                     <input type="text" id="row-input" class="char-input" value="金木水火土" maxlength="8" autocomplete="off"
@@ -617,6 +663,8 @@
     <footer>
         Character decomposition data from the
         <a href="https://github.com/cjkvi/cjkvi-ids" target="_blank" rel="noopener">CJKVI IDS Database</a>.
+        &middot;
+        <a href="https://github.com/mreichhoff" target="_blank" rel="noopener">GitHub</a>
     </footer>
 
     <script src="data.js"></script>
@@ -858,6 +906,14 @@
                     render();
                 });
 
+                // Swap
+                document.getElementById('swap-btn').addEventListener('click', () => {
+                    const tmp = colInput.value;
+                    colInput.value = rowInput.value;
+                    rowInput.value = tmp;
+                    render();
+                });
+
                 // Theme toggle
                 document.getElementById('theme-toggle').addEventListener('click', () => {
                     const html = document.documentElement;
@@ -885,6 +941,7 @@
                 }
 
                 function showTooltip(cell, x, y) {
+                    tooltip._sourceCell = cell;
                     const ch = cell.dataset.char;
                     const def = getDefinition(ch);
                     const row = cell.dataset.row;
@@ -900,10 +957,13 @@
                         html += `<div class="tt-def">${def}</div>`;
                     }
                     if (alt.length > 1) {
-                        const altChars = [...alt].slice(1).map(c =>
-                            `<span>${c}</span>`
-                        ).join('');
-                        html += `<div class="tt-alt">Alternatives: ${altChars}</div>`;
+                        const filtered = [...alt].slice(1).filter(c => c.codePointAt(0) < 0x20000);
+                        if (filtered.length) {
+                            const altChars = filtered.map(c =>
+                                `<span data-alt-char="${c}">${c}</span>`
+                            ).join('');
+                            html += `<div class="tt-alt">Alternatives: ${altChars}</div>`;
+                        }
                     }
 
                     tooltip.innerHTML = html;
@@ -935,6 +995,25 @@
                     const btn = e.target.closest('[data-speak]');
                     if (btn) speakChar(btn.dataset.speak);
                     if (e.target.closest('[data-close]')) hideTooltip();
+                    const altBtn = e.target.closest('[data-alt-char]');
+                    if (altBtn && tooltip._sourceCell && tooltip._sourceCell.classList.contains('cell')) {
+                        const newChar = altBtn.dataset.altChar;
+                        const cell = tooltip._sourceCell;
+                        cell.textContent = newChar;
+                        cell.dataset.char = newChar;
+                        // Rebuild alt list: put the new char first, old first char where the clicked one was
+                        const oldAlt = cell.dataset.alt;
+                        const oldFirst = [...oldAlt][0];
+                        const newAlt = newChar + [...oldAlt].filter(c => c !== newChar).map(c => c === oldFirst ? oldFirst : c).join('');
+                        cell.dataset.alt = newChar + [...oldAlt].filter(c => c !== newChar).join('');
+                        // Flip animation
+                        cell.classList.remove('flip');
+                        void cell.offsetWidth;
+                        cell.classList.add('flip');
+                        // Re-show tooltip for the new char
+                        const rect = cell.getBoundingClientRect();
+                        showTooltip(cell, rect.left + rect.width / 2, rect.bottom);
+                    }
                 });
 
                 eqWrapper.addEventListener('click', e => {
