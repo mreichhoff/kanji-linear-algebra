@@ -840,19 +840,36 @@
                 /* ---- URL hash ---- */
 
                 function updateHash() {
-                    history.replaceState(null, '', '#' + colInput.value + 'x' + rowInput.value);
+                    const prefix = lang === 'zh' ? 'zh' : '';
+                    history.replaceState(null, '', '#' + prefix + colInput.value + 'x' + rowInput.value);
                 }
 
                 function loadFromHash() {
-                    const hash = decodeURIComponent(location.hash.slice(1));
+                    let hash = decodeURIComponent(location.hash.slice(1));
                     if (!hash) return false;
+                    let hasZh = false;
+                    if (hash.startsWith('zh')) {
+                        hasZh = true;
+                        hash = hash.slice(2);
+                    }
                     const idx = hash.indexOf('x');
                     if (idx > 0 && idx < hash.length - 1) {
                         colInput.value = hash.slice(0, idx);
                         rowInput.value = hash.slice(idx + 1);
+                        if (hasZh) applyLang('zh');
                         return true;
                     }
+                    if (hasZh) applyLang('zh');
                     return false;
+                }
+
+                function applyLang(newLang) {
+                    lang = newLang;
+                    const btn = document.getElementById('lang-toggle');
+                    const isJp = newLang === 'jp';
+                    btn.classList.toggle('jp', isJp);
+                    document.getElementById('header-kanji').textContent = isJp ? '漢字' : '汉字';
+                    document.querySelector('header').classList.toggle('zh', !isJp);
                 }
 
                 /* ---- Rendering ---- */
@@ -1045,9 +1062,8 @@
                 document.getElementById('lang-toggle').addEventListener('click', () => {
                     const btn = document.getElementById('lang-toggle');
                     const isJp = btn.classList.toggle('jp');
-                    lang = isJp ? 'jp' : 'zh';
-                    document.getElementById('header-kanji').textContent = isJp ? '漢字' : '汉字';
-                    document.querySelector('header').classList.toggle('zh', !isJp);
+                    applyLang(isJp ? 'jp' : 'zh');
+                    updateHash();
                 });
 
                 // Tooltip
