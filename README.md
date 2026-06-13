@@ -4,6 +4,8 @@ Multiply Japanese or Chinese characters by their radicals to discover new charac
 
 **[Try it live](https://mreichhoff.github.io/kanji-linear-algebra/)**
 
+[Discussed on r/LearnJapanese](https://www.reddit.com/r/LearnJapanese/comments/1sp8ejs/kanji_linear_algebra/) (2,000+ upvotes)
+
 https://github.com/user-attachments/assets/4eefc227-f859-403b-b37a-17a6df0a22e6
 
 
